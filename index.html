@@ -47,6 +47,11 @@
             margin-top: 0.5rem;
             color: #E2E8F0;
         }
+        .financial-kpi {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #EF476F;
+        }
     </style>
 </head>
 <body class="text-gray-800">
@@ -113,6 +118,22 @@
                 <div class="chart-container">
                     <canvas id="planoChart"></canvas>
                 </div>
+            </div>
+
+            <div class="lg:col-span-2 bg-white rounded-lg shadow-md p-8 text-center mt-8">
+                <h2 class="text-3xl font-bold mb-4 text-[#073B4C]">O Impacto Financeiro da Evasão</h2>
+                <p class="text-gray-600 mb-6">Além da perda de alunos, a evasão representa um impacto direto na receita. Este é o valor total dos contratos que foram interrompidos ou não renovados no período de 8 meses analisado.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <p class="financial-kpi">R$ 2.180.940</p>
+                        <p class="text-lg font-semibold text-gray-700">Receita Total Perdida (Estimativa)</p>
+                    </div>
+                    <div>
+                        <p class="financial-kpi">R$ 1.379</p>
+                        <p class="text-lg font-semibold text-gray-700">Valor Médio por Aluno (LTV Perdido)</p>
+                    </div>
+                </div>
+                 <p class="text-sm text-gray-500 mt-6">*Cálculo conservador baseado nos valores dos planos de Natação (1x por semana).</p>
             </div>
             
             <div class="lg:col-span-2 bg-white rounded-lg shadow-md p-8 text-center mt-8 mb-8">
