@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panorama da Evasão de Alunos - Manta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .kpi-card {
+            background-color: #073B4C;
+            color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .kpi-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1;
+            color: #FFD166;
+        }
+        .kpi-label {
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            color: #E2E8F0;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-[#073B4C] mb-2">Panorama da Evasão de Alunos</h1>
+            <p class="text-lg text-gray-600">Manta Formação Aquática: Jan a Ago de 2025</p>
+        </header>
+
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div class="kpi-card">
+                <div class="kpi-number">1.582</div>
+                <div class="kpi-label">Total de Alunos Perdidos</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-number">55,8%</div>
+                <div class="kpi-label">Saíram por "Desistência"</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-number">803 Crianças</div>
+                <div class="kpi-label">Principal Perfil de Evasão (0-12 anos)</div>
+            </div>
+        </section>
+
+        <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-1 text-[#073B4C]">Motivos de Saída: O Ponto de Atenção na Desistência</h2>
+                <p class="text-gray-600 mb-4">O principal ponto de atenção vai além da simples não renovação. A maioria das saídas ocorre por desistência, indicando uma oportunidade para aprofundar a compreensão da jornada do aluno.</p>
+                <div class="chart-container">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-1 text-[#073B4C]">Perfil por Idade: Foco no Público Infantil</h2>
+                <p class="text-gray-600 mb-4">Mais da metade da evasão está concentrada no público infantil. Entender as necessidades deste grupo e de seus responsáveis é fundamental para a estratégia de retenção.</p>
+                <div class="chart-container">
+                    <canvas id="faixaEtariaChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-1 text-[#073B4C]">Análise de Evasão por Unidade</h2>
+                <p class="text-gray-600 mb-4">A unidade 712N apresenta o maior volume de saídas, seguida pela 610S. A "Desistência" como principal motivo em todas elas sugere um padrão a ser analisado na experiência oferecida.</p>
+                <div class="chart-container h-[450px] max-h-[500px]">
+                    <canvas id="unidadeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-1 text-[#073B4C]">Análise de Evasão por Modalidade</h2>
+                <p class="text-gray-600 mb-4">Sendo o principal produto, a Natação naturalmente concentra a maior parte das saídas. A alta taxa de desistência nesta modalidade e no Condicionamento Coletivo merece uma análise mais detalhada.</p>
+                <div class="chart-container">
+                    <canvas id="modalidadeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-1 text-[#073B4C]">Análise de Evasão por Tipo de Plano</h2>
+                <p class="text-gray-600 mb-4">A evasão concentra-se em planos de longo prazo. O desafio é manter o engajamento e a percepção de valor ao longo de todo o contrato, garantindo que a experiência corresponda à expectativa inicial.</p>
+                <div class="chart-container">
+                    <canvas id="planoChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="lg:col-span-2 bg-white rounded-lg shadow-md p-8 text-center mt-8 mb-8">
+                <h2 class="text-3xl font-bold mb-4 text-[#073B4C]">Diagnóstico: Perfil da Evasão</h2>
+                <div class="bg-blue-50 border-l-4 border-[#118AB2] p-6 my-4 text-lg text-gray-700 text-left">
+                    <p class="mb-2">A análise dos dados aponta para um perfil de evasão bem definido, concentrado em:</p>
+                    <ul class="list-disc list-inside space-y-1">
+                        <li><strong>Público:</strong> Alunos de 0 a 12 anos.</li>
+                        <li><strong>Modalidade:</strong> Natação Infantil.</li>
+                        <li><strong>Plano:</strong> Semestral ou Anual.</li>
+                        <li><strong>Motivo:</strong> Desistência durante a vigência do contrato.</li>
+                        <li><strong>Local:</strong> Com maior incidência na unidade 712N.</li>
+                    </ul>
+                </div>
+                <p class="text-gray-600 mt-4">Um dado relevante é que <span class="font-bold text-[#EF476F]">93.5%</span> das crianças que saíram (751 de 803) eram da modalidade Natação. Isso indica que as oportunidades de melhoria podem ser focadas na experiência da Natação Infantil para aumentar a retenção.</p>
+            </div>
+
+        </main>
+
+    </div>
+
+    <script>
+        const colorPalette = {
+            red: '#EF476F',
+            yellow: '#FFD166',
+            green: '#06D6A0',
+            blue: '#118AB2',
+            darkBlue: '#073B4C'
+        };
+
+        const defaultChartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            const item = tooltipItems[0];
+                            let label = item.chart.data.labels[item.dataIndex];
+                            if (Array.isArray(label)) {
+                                return label.join(' ');
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        };
+        
+        function wrapLabel(label, maxLength = 16) {
+            if (label.length <= maxLength) {
+                return label;
+            }
+            const words = label.split(' ');
+            const lines = [];
+            let currentLine = '';
+            for (const word of words) {
+                if ((currentLine + word).length > maxLength && currentLine.length > 0) {
+                    lines.push(currentLine.trim());
+                    currentLine = '';
+                }
+                currentLine += word + ' ';
+            }
+            lines.push(currentLine.trim());
+            return lines;
+        }
+
+        new Chart(document.getElementById('statusChart').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Desistente', 'Cancelado', 'Vencido'],
+                datasets: [{
+                    label: 'Status de Saída',
+                    data: [883, 602, 97],
+                    backgroundColor: [colorPalette.red, colorPalette.yellow, colorPalette.blue],
+                    borderColor: '#ffffff',
+                    borderWidth: 2
+                }]
+            },
+            options: defaultChartOptions
+        });
+
+        new Chart(document.getElementById('faixaEtariaChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['0-12', '13-17', '18-25', '26-35', '36-45', '46-55', '56-65', '66+'],
+                datasets: [{
+                    label: 'Alunos Perdidos por Faixa Etária',
+                    data: [803, 81, 45, 181, 188, 114, 93, 77],
+                    backgroundColor: colorPalette.blue,
+                    borderColor: colorPalette.darkBlue,
+                    borderWidth: 1
+                }]
+            },
+            options: { ...defaultChartOptions, plugins: { ...defaultChartOptions.plugins, legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+
+        new Chart(document.getElementById('unidadeChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['712N', '610S', 'VP', '303SW', '702S'],
+                datasets: [
+                    { label: 'Desistente', data: [297, 198, 160, 120, 108], backgroundColor: colorPalette.red },
+                    { label: 'Cancelado', data: [157, 185, 124, 79, 57], backgroundColor: colorPalette.yellow },
+                    { label: 'Vencido', data: [22, 26, 21, 16, 12], backgroundColor: colorPalette.green }
+                ]
+            },
+            options: { ...defaultChartOptions, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } } }
+        });
+
+        const modalidadeLabels = ['NATAÇÃO', wrapLabel('COND. COLETIVO'), 'HIDROGINÁSTICA', 'OUTRAS'].map(l => typeof l === 'string' ? wrapLabel(l) : l);
+        new Chart(document.getElementById('modalidadeChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: modalidadeLabels,
+                datasets: [{
+                    label: 'Alunos Perdidos por Modalidade',
+                    data: [896, 251, 184, 251],
+                    backgroundColor: [colorPalette.blue, colorPalette.green, colorPalette.yellow, colorPalette.red],
+                }]
+            },
+            options: { ...defaultChartOptions, indexAxis: 'y', plugins: { ...defaultChartOptions.plugins, legend: { display: false } }, scales: { x: { beginAtZero: true } } }
+        });
+
+        new Chart(document.getElementById('planoChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['Semestral', 'Anual', 'Trimestral', 'Mensal'],
+                datasets: [{
+                    label: 'Alunos Perdidos por Plano',
+                    data: [789, 501, 195, 97],
+                    backgroundColor: [colorPalette.red, colorPalette.yellow, colorPalette.blue, colorPalette.green],
+                }]
+            },
+            options: { ...defaultChartOptions, indexAxis: 'y', plugins: { ...defaultChartOptions.plugins, legend: { display: false } }, scales: { x: { beginAtZero: true } } }
+        });
+
+    </script>
+
+</body>
+</html>
+
