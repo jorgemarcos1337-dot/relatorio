@@ -1,193 +1,459 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard de Análise de Evasão - Manta (Análise Definitiva)</title>
+    <title>Dashboard de Análise de Clientes - Manta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
     <style>
-        /* Estilos do layout de dashboard preferido */
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; background-color: #f4f7fa; color: #333; margin: 0; }
-        .container { max-width: 1400px; margin: 20px auto; padding: 0 20px; }
-        header { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; }
-        h1, h2, h3 { color: #1a253c; }
-        h1 { font-size: 1.8em; text-align: center; margin-bottom: 20px;}
-        h2 { font-size: 1.5em; border-bottom: 2px solid #e1e5e8; padding-bottom: 10px; margin-top: 40px;}
-        h3 { font-size: 1.2em; }
-        /* Área do Cabeçalho */
-        .header-filters { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
-        .filter-group { display: flex; flex-direction: column; }
-        .filter-group label { font-weight: bold; margin-bottom: 5px; font-size: 0.9em; }
-        .filter-group select, .filter-group input { padding: 8px; border-radius: 5px; border: 1px solid #ccc; background-color: #fff; }
-        .kpi-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px; }
-        .kpi-card { background-color: #1a253c; color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: center; }
-        .kpi-card .value { font-size: 2em; font-weight: bold; color: #76c8e8; margin: 10px 0 0 0; }
-        .kpi-card .label { font-size: 1em; color: #e2e8f0; }
-        /* Áreas de Gráficos e Tabelas */
-        .section { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 30px; }
-        .chart-container { width: 100%; min-height: 350px; background-color: #f9f9f9; border: 1px dashed #ccc; display: flex; align-items: center; justify-content: center; color: #888; text-align: center; border-radius: 5px; margin-top: 15px;}
-        .columns-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-        /* Tabela Interativa */
-        .table-wrapper { overflow-x: auto; max-height: 400px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th, td { padding: 12px 15px; border: 1px solid #e1e5e8; text-align: left; }
-        thead { background-color: #eef2f5; position: sticky; top: 0; }
-        th { font-weight: bold; cursor: pointer; }
-        th:hover { background-color: #dde4e9; }
-        tbody tr:nth-child(even) { background-color: #f9f9f9; }
-        tbody tr:hover { background-color: #f1f5f8; }
-        /* Botão de Exportação */
-        .export-button { padding: 10px 20px; background-color: #1a253c; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; font-weight: bold; float: right; }
-        .export-button:hover { background-color: #0056b3; }
-        /* Layout Responsivo */
-        @media (max-width: 900px) { .columns-layout { grid-template-columns: 1fr; } }
-        @media (max-width: 768px) { .header-filters { flex-direction: column; align-items: stretch; } }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* Fundo cinza escuro para o modo escuro */
+            color: #d1d5db; /* Cor de texto padrão para modo escuro */
+        }
+        .chart-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
+        }
+        .kpi-card {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+            border-color: #3b82f6;
+        }
+        .custom-select {
+            background-color: #1f2937;
+            border: 1px solid #4b5563;
+            color: #d1d5db;
+        }
+        /* Estilo para a tabela */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #374151;
+        }
+        th {
+            background-color: #1f2937;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        tr:hover {
+            background-color: #1f2937;
+        }
     </style>
 </head>
-<body>
+<body class="p-4 md:p-8">
 
-    <div class="container">
-
-        <header>
-            <h1>Dashboard de Diagnóstico de Evasão - Manta</h1>
-            <div class="header-filters">
-                <div class="filter-group">
-                    <label for="period-filter">Filtro de Período</label>
-                    <select id="period-filter" name="period">
-                        <option value="current">Análise: Jan a Ago 2025</option>
-                        </select>
+    <!-- ÁREA 1: CABEÇALHO E KPIs -->
+    <header class="sticky top-0 bg-[#111827]/80 backdrop-blur-md z-10 py-4 mb-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold text-white">Dashboard de Análise de Clientes</h1>
+                    <p class="text-gray-400">Dados de: relatorio-final-DEFINITIVO.docx</p>
                 </div>
-                <div class="filter-group">
-                    <label for="unit-filter">Filtro por Unidade(s)</label>
-                    <select id="unit-filter" name="unit" multiple size="3">
-                        <option value="all" selected>Todas as Unidades</option>
-                        <option value="712N">712N</option>
-                        <option value="610S">610S</option>
-                        <option value="VP">VP</option>
-                        <option value="303SW">303SW</option>
-                        <option value="702S">702S</option>
+                <div class="flex items-center space-x-4 mt-4 md:mt-0">
+                    <label for="unidadeFilter" class="text-sm font-medium text-gray-300">Unidade:</label>
+                    <select id="unidadeFilter" class="custom-select rounded-md px-3 py-2 text-sm">
+                        <option value="todas">Todas as Unidades</option>
+                        <option value="712n">712N</option>
+                        <option value="610s">610S</option>
+                        <option value="vp">VP</option>
+                        <option value="303sw">303SW</option>
+                        <option value="702s">702S</option>
                     </select>
                 </div>
-                <button class="export-button" title="Exportar dados da visão atual para CSV/Excel">
-                    Exportar para Planilha
-                </button>
             </div>
 
-            <div class="kpi-container">
-                <div class="kpi-card">
-                    <div class="label">Total de Alunos Evadidos</div>
-                    <div class="value">1.490</div>
-                </div>
-                <div class="kpi-card">
-                    <div class="label">Impacto Financeiro (LTV Real)</div>
-                    <div class="value">R$ 10,3 Mi</div>
-                </div>
-                <div class="kpi-card">
-                    <div class="label">LTV Médio por Aluno Perdido</div>
-                    <div class="value">R$ 6.934</div>
-                </div>
-                <div class="kpi-card">
-                    <div class="label">Permanência Média (Evadidos)</div>
-                    <div class="value">20,7 meses</div>
-                </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div id="kpi-ativos" class="kpi-card bg-gray-800 p-6 rounded-xl"></div>
+                <div id="kpi-evasao" class="kpi-card bg-gray-800 p-6 rounded-xl"></div>
+                <div id="kpi-churn" class="kpi-card bg-gray-800 p-6 rounded-xl"></div>
+                <div id="kpi-impacto" class="kpi-card bg-gray-800 p-6 rounded-xl"></div>
             </div>
-        </header>
+        </div>
+    </header>
 
-        <section class="section">
-            <h2>Panorama da Evasão: A Cara do Nosso Problema</h2>
-            <div class="columns-layout">
-                <div>
-                    <h3>Evasão por Motivo</h3>
-                    <div class="chart-container">
-                        [cite_start]<p><strong>[Gráfico de Rosca]</strong><br>Desistência: 888 (59,6%) [cite: 37, 44][cite_start]<br>Cancelamento: 602 (40,4%) [cite: 46]</p>
-                    </div>
+    <main class="max-w-7xl mx-auto">
+        <!-- ÁREA 2: PANORAMA DA EVASÃO -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 text-white">Panorama da Evasão</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1 bg-gray-800 p-6 rounded-xl border border-gray-700">
+                    <h3 class="font-semibold mb-4 text-center text-white">Evasão por Motivo</h3>
+                    <div class="chart-container" style="height:300px;"><canvas id="motivoChart"></canvas></div>
                 </div>
-                <div>
-                    <h3>Top 5 Unidades com Maior Evasão</h3>
-                    <div class="chart-container">
-                        <p><strong>[Gráfico de Barras Horizontais]</strong><br>Mostrando o volume de evasão por unidade.<br>1. [cite_start]712N: 456 alunos [cite: 53]<br>2. [cite_start]610S: 384 alunos [cite: 55]</p>
-                    </div>
+                <div class="lg:col-span-2 bg-gray-800 p-6 rounded-xl border border-gray-700">
+                    <h3 class="font-semibold mb-4 text-center text-white">Top 5 Unidades com Maior Evasão</h3>
+                    <div class="chart-container" style="height:300px;"><canvas id="unidadesChart"></canvas></div>
                 </div>
             </div>
         </section>
 
-        <section class="section">
-            <h2>Análise Detalhada: Performance por Unidade vs. Perfil Etário</h2>
-            <div class="columns-layout">
-                <div class="column">
-                    <h3>Foco na Performance por Unidade</h3>
-                    <div>
-                        <h4>Permanência Média por Unidade</h4>
-                        <div class="chart-container">
-                             [cite_start]<p><strong>[Gráfico de Barras Verticais]</strong><br>Destacando a retenção superior da 702S (28,3 meses) [cite: 63] [cite_start]e a menor da VP (14,8 meses)[cite: 58].</p>
-                        </div>
+        <!-- ÁREA 3: ANÁLISE DETALHADA -->
+        <section>
+            <h2 class="text-2xl font-bold mb-6 text-white">Análise Detalhada</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Coluna A: Foco na Evasão -->
+                <div class="flex flex-col gap-8">
+                    <div class="bg-gray-800 p-6 rounded-xl border border-gray-700">
+                        <h3 class="font-semibold mb-4 text-white">Evasão por Faixa Etária</h3>
+                        <div class="chart-container"><canvas id="evasaoIdadeChart"></canvas></div>
                     </div>
-                    <h4 style="margin-top: 20px;">Tabela Detalhada de Unidades</h4>
-                    <div class="table-wrapper">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Unidade</th>
-                                    <th>Alunos Evadidos</th>
-                                    <th>Permanência Média</th>
-                                    <th>Receita Perdida (LTV)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                [cite_start]<tr><td>712N</td><td>456 [cite: 53][cite_start]</td><td>21,7 meses [cite: 54][cite_start]</td><td>R$ 3.911.230 [cite: 54]</td></tr>
-                                [cite_start]<tr><td>610S</td><td>384 [cite: 55][cite_start]</td><td>21,5 meses [cite: 56][cite_start]</td><td>R$ 2.753.765 [cite: 56]</td></tr>
-                                [cite_start]<tr><td>VP</td><td>285 [cite: 57][cite_start]</td><td>14,8 meses [cite: 58][cite_start]</td><td>R$ 775.298 [cite: 58]</td></tr>
-                                [cite_start]<tr><td>303SW</td><td>199 [cite: 59][cite_start]</td><td>19,3 meses [cite: 60][cite_start]</td><td>R$ 1.385.940 [cite: 60]</td></tr>
-                                [cite_start]<tr><td>702S</td><td>166 [cite: 62][cite_start]</td><td>28,3 meses [cite: 63][cite_start]</td><td>R$ 1.705.427 [cite: 63]</td></tr>
-                            </tbody>
-                        </table>
+                    <div class="bg-gray-800 p-6 rounded-xl border border-gray-700">
+                        <h3 class="font-semibold mb-4 text-white">Desistentes vs. Cancelados por Idade</h3>
+                        <div class="chart-container"><canvas id="desistVsCancelChart"></canvas></div>
                     </div>
                 </div>
-
-                <div class="column">
-                    <h3>Foco na Evasão por Faixa Etária</h3>
-                    <div>
-                        <h4>Volume de Evasão por Faixa Etária</h4>
-                        <div class="chart-container">
-                             [cite_start]<p><strong>[Gráfico de Barras Verticais]</strong><br>Mostrando picos nas faixas 9-12 anos (255 alunos) [cite: 69] [cite_start]e 5-6 anos (248 alunos)[cite: 71].</p>
-                        </div>
+                <!-- Coluna B: Foco nos Ativos -->
+                <div class="flex flex-col gap-8">
+                    <div class="bg-gray-800 p-6 rounded-xl border border-gray-700">
+                        <h3 class="font-semibold mb-4 text-white">LTV Médio por Faixa Etária (Ativos)</h3>
+                        <div class="chart-container"><canvas id="ltvIdadeChart"></canvas></div>
                     </div>
-                    <h4 style="margin-top: 20px;">Tabela Detalhada por Faixa Etária</h4>
-                    <div class="table-wrapper">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Faixa Etária (Manta)</th>
-                                    <th>Alunos Evadidos</th>
-                                    <th>Permanência Média</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                [cite_start]<tr style="background-color: #fef2f2;"><td>9-12: AP 2, 3</td><td>255 [cite: 69][cite_start]</td><td>28,3 meses [cite: 70]</td></tr>
-                                [cite_start]<tr><td>5-6: Iniciação</td><td>248 [cite: 71][cite_start]</td><td>22,8 meses [cite: 72]</td></tr>
-                                [cite_start]<tr><td>7-8: AP 1</td><td>209 [cite: 73][cite_start]</td><td>25,5 meses [cite: 74]</td></tr>
-                                [cite_start]<tr><td>3-4: Adaptação</td><td>197 [cite: 75][cite_start]</td><td>15,4 meses [cite: 75]</td></tr>
-                                [cite_start]<tr><td>0-2: Bebê</td><td>149 [cite: 77][cite_start]</td><td>9,2 meses [cite: 77]</td></tr>
-                                [cite_start]<tr style="background-color: #f0fdf4;"><td>56+: Adulto 4</td><td>101 [cite: 80][cite_start]</td><td>34,3 meses [cite: 81]</td></tr>
-                                [cite_start]<tr style="background-color: #f0fdf4;"><td>13-17: Adolescente</td><td>51 [cite: 86][cite_start]</td><td>29,5 meses [cite: 86]</td></tr>
-                            </tbody>
-                        </table>
+                     <div class="bg-gray-800 p-6 rounded-xl border border-gray-700">
+                        <h3 class="font-semibold mb-4 text-white">Tempo Médio de Permanência por Idade (Ativos)</h3>
+                        <div class="chart-container"><canvas id="permanenciaIdadeChart"></canvas></div>
                     </div>
                 </div>
             </div>
         </section>
+    </main>
 
-        <section class="section">
-            <h2>Instruções para o Programador (Funcionalidades e Interatividade)</h2>
-            <ul>
-                <li><strong>Layout Responsivo:</strong> Garantir que o design se adapte a desktops, tablets e celulares.</li>
-                <li><strong>Estado Único (One-Page Core):</strong> A página não deve recarregar ao aplicar filtros. As atualizações devem ser instantâneas (requer JavaScript).</li>
-                <li><strong>Cross-Filtering Total (Funcionalidade Chave):</strong> Clicar em um elemento de qualquer gráfico (ex: a fatia "Desistentes" da pizza, a barra "712N") deve filtrar todos os outros gráficos e tabelas na página.</li>
-                <li><strong>Tooltips Detalhados:</strong> Implementar janelas de informação que aparecem ao passar o mouse sobre os elementos dos gráficos, exibindo os dados exatos.</li>
-                <li><strong>Exportação:</strong> O botão "Exportar" no cabeçalho deve gerar um arquivo CSV ou Excel com os dados da visualização atual, respeitando os filtros aplicados.</li>
-            </ul>
-        </section>
+    <script>
+    // --- FONTE DE DADOS ÚNICA (Extraído de relatorio-final-DEFINITIVO.docx) ---
+    const fullData = {
+        kpis: {
+            ativos: 4441,
+            evasao: 2211,
+            desistentes: 1366,
+            cancelados: 845,
+            impactoAnual: 8901180.36
+        },
+        evasaoPorUnidade: [
+            { unidade: '712n', total: 704, desistentes: 472, cancelados: 232 },
+            { unidade: '610s', total: 584, desistentes: 328, cancelados: 256 },
+            { unidade: 'vp', total: 385, desistentes: 210, cancelados: 175 },
+            { unidade: '303sw', total: 282, desistentes: 178, cancelados: 104 },
+            { unidade: '702s', total: 256, desistentes: 178, cancelados: 78 }
+        ],
+        // Dados de evasão por idade (agregados do relatório para o gráfico)
+        evasaoPorIdade: [
+            { idade: "0-4", desistentes: 36, cancelados: 15 },
+            { idade: "5-6", desistentes: 65, cancelados: 62 },
+            { idade: "7-12", desistentes: 279, cancelados: 139 },
+            { idade: "13-17", desistentes: 204, cancelados: 104 },
+            { idade: "18+", desistentes: 782, cancelados: 525 }
+        ],
+        // Dados de clientes ativos (agregados do relatório para o gráfico)
+        ativosPorIdade: [
+            { idade: "0-4", ltv: 5503, permanencia: 18.2, count: 367 },
+            { idade: "5-6", ltv: 10303, permanencia: 30.5, count: 681 },
+            { idade: "7-12", ltv: 16546, permanencia: 50.1, count: 1253 },
+            { idade: "13-17", ltv: 10560, permanencia: 30.2, count: 928 },
+            { idade: "18+", ltv: 12500, permanencia: 35.0, count: 1212 } 
+        ]
+    };
 
-    </div>
+    // --- VARIÁVEIS GLOBAIS ---
+    let charts = {};
+    const unidadeFilter = document.getElementById('unidadeFilter');
+    
+    // --- FUNÇÕES DE INICIALIZAÇÃO E ATUALIZAÇÃO ---
+    document.addEventListener('DOMContentLoaded', () => {
+        unidadeFilter.addEventListener('change', updateDashboard);
+        initializeDashboard();
+    });
 
+    function initializeDashboard() {
+        createCharts();
+        updateDashboard();
+    }
+    
+    // Função principal que orquestra a atualização
+    function updateDashboard() {
+        const selectedUnidade = unidadeFilter.value;
+        const filteredData = filterData(selectedUnidade);
+        updateKPIs(filteredData.kpis);
+        updateAllCharts(filteredData);
+    }
+    
+    // Função para filtrar os dados com base na seleção
+    function filterData(unidade) {
+        if (unidade === 'todas') {
+            return fullData; // Retorna os dados completos
+        }
+
+        const filteredEvasaoUnidade = fullData.evasaoPorUnidade.filter(d => d.unidade === unidade);
+        if (filteredEvasaoUnidade.length === 0) return createEmptyDataStructure();
+        
+        const totalEvasaoUnidade = filteredEvasaoUnidade[0].total;
+        const totalEvasaoGeral = fullData.kpis.evasao;
+        const proporcao = totalEvasaoUnidade / totalEvasaoGeral;
+
+        const filteredKpis = {
+            ativos: Math.round(fullData.kpis.ativos * proporcao), // Estimativa baseada na proporção de evasão
+            evasao: totalEvasaoUnidade,
+            desistentes: filteredEvasaoUnidade[0].desistentes,
+            cancelados: filteredEvasaoUnidade[0].cancelados,
+            impactoAnual: fullData.kpis.impactoAnual * proporcao
+        };
+
+        const filteredEvasaoIdade = fullData.evasaoPorIdade.map(d => ({
+            idade: d.idade,
+            desistentes: Math.round(d.desistentes * proporcao),
+            cancelados: Math.round(d.cancelados * proporcao)
+        }));
+        
+        const filteredAtivosIdade = fullData.ativosPorIdade.map(d => ({
+            ...d,
+            count: Math.round(d.count * proporcao) // Estimativa
+        }));
+
+        return {
+            kpis: filteredKpis,
+            evasaoPorUnidade: filteredEvasaoUnidade,
+            evasaoPorIdade: filteredEvasaoIdade,
+            ativosPorIdade: filteredAtivosIdade
+        };
+    }
+
+    // Função para criar uma estrutura de dados vazia para evitar erros
+    function createEmptyDataStructure() {
+        return {
+            kpis: { ativos: 0, evasao: 0, desistentes: 0, cancelados: 0, impactoAnual: 0 },
+            evasaoPorUnidade: [],
+            evasaoPorIdade: fullData.evasaoPorIdade.map(d => ({...d, desistentes: 0, cancelados: 0})),
+            ativosPorIdade: fullData.ativosPorIdade.map(d => ({...d, count: 0 }))
+        }
+    }
+
+    // Atualiza os cards de KPI
+    function updateKPIs(kpis) {
+        const churnRate = (kpis.ativos + kpis.evasao > 0) ? (kpis.evasao / (kpis.ativos + kpis.evasao) * 100) : 0;
+
+        document.getElementById('kpi-ativos').innerHTML = `
+            <h3 class="text-sm font-medium text-gray-400">Alunos Ativos</h3>
+            <p class="text-3xl font-bold text-white">${kpis.ativos.toLocaleString('pt-BR')}</p>`;
+        document.getElementById('kpi-evasao').innerHTML = `
+            <h3 class="text-sm font-medium text-gray-400">Evasão (12m)</h3>
+            <p class="text-3xl font-bold text-white">${kpis.evasao.toLocaleString('pt-BR')}</p>`;
+        document.getElementById('kpi-churn').innerHTML = `
+            <h3 class="text-sm font-medium text-gray-400">Taxa de Churn Anual</h3>
+            <p class="text-3xl font-bold text-blue-400">${churnRate.toFixed(1)}%</p>`;
+        document.getElementById('kpi-impacto').innerHTML = `
+            <h3 class="text-sm font-medium text-gray-400">Impacto Financeiro Anual</h3>
+            <p class="text-3xl font-bold text-red-400">R$ ${kpis.impactoAnual.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>`;
+    }
+
+    // Função para atualizar todos os gráficos
+    function updateAllCharts(data) {
+        // Motivo Chart
+        charts.motivo.data.datasets[0].data = [data.kpis.desistentes, data.kpis.cancelados];
+        charts.motivo.update();
+        
+        // Unidades Chart
+        const unidadesLabels = data.evasaoPorUnidade.map(u => u.unidade.toUpperCase()).sort((a,b) => b.total - a.total);
+        const desistentesData = data.evasaoPorUnidade.map(u => u.desistentes);
+        const canceladosData = data.evasaoPorUnidade.map(u => u.cancelados);
+        charts.unidades.data.labels = unidadesLabels;
+        charts.unidades.data.datasets[0].data = desistentesData;
+        charts.unidades.data.datasets[1].data = canceladosData;
+        if(unidadeFilter.value !== 'todas') {
+             charts.unidades.data.labels = [unidadeFilter.value.toUpperCase()];
+        } else {
+             charts.unidades.data.labels = fullData.evasaoPorUnidade.map(u => u.unidade.toUpperCase()).sort((a, b) => b.total - a.total);
+        }
+        charts.unidades.update();
+        
+        // Evasão por Idade Chart
+        const evasaoIdadeLabels = data.evasaoPorIdade.map(d => d.idade);
+        const totalEvasaoIdadeData = data.evasaoPorIdade.map(d => d.desistentes + d.cancelados);
+        charts.evasaoIdade.data.labels = evasaoIdadeLabels;
+        charts.evasaoIdade.data.datasets[0].data = totalEvasaoIdadeData;
+        charts.evasaoIdade.update();
+
+        // Desistentes vs Cancelados por Idade
+        const desistIdadeData = data.evasaoPorIdade.map(d => d.desistentes);
+        const cancelIdadeData = data.evasaoPorIdade.map(d => d.cancelados);
+        charts.desistVsCancel.data.labels = evasaoIdadeLabels;
+        charts.desistVsCancel.data.datasets[0].data = desistIdadeData;
+        charts.desistVsCancel.data.datasets[1].data = cancelIdadeData;
+        charts.desistVsCancel.update();
+
+        // LTV por Idade
+        const ativosIdadeLabels = data.ativosPorIdade.map(d => d.idade);
+        const ltvIdadeData = data.ativosPorIdade.map(d => d.ltv);
+        charts.ltvIdade.data.labels = ativosIdadeLabels;
+        charts.ltvIdade.data.datasets[0].data = ltvIdadeData;
+        charts.ltvIdade.update();
+
+        // Permanencia por Idade
+        const permanenciaIdadeData = data.ativosPorIdade.map(d => d.permanencia);
+        charts.permanenciaIdade.data.labels = ativosIdadeLabels;
+        charts.permanenciaIdade.data.datasets[0].data = permanenciaIdadeData;
+        charts.permanenciaIdade.update();
+    }
+    
+    // --- FUNÇÕES DE CRIAÇÃO DOS GRÁFICOS ---
+    function createCharts() {
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: { color: '#d1d5db' }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: '#9ca3af' },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                },
+                x: {
+                    ticks: { color: '#9ca3af' },
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' }
+                }
+            }
+        };
+
+        // Gráfico 1: Evasão por Motivo (Rosca)
+        const ctxMotivo = document.getElementById('motivoChart').getContext('2d');
+        charts.motivo = new Chart(ctxMotivo, {
+            type: 'doughnut',
+            data: {
+                labels: ['Desistentes', 'Cancelados'],
+                datasets: [{
+                    label: 'Total de Alunos',
+                    data: [],
+                    backgroundColor: ['#f87171', '#fbbf24'],
+                    borderColor: '#1f2937',
+                    borderWidth: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#d1d5db', boxWidth: 15, padding: 20 }
+                    }
+                }
+            }
+        });
+
+        // Gráfico 2: Top Unidades (Barras Horizontais Empilhadas)
+        const ctxUnidades = document.getElementById('unidadesChart').getContext('2d');
+        charts.unidades = new Chart(ctxUnidades, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Desistentes',
+                        data: [],
+                        backgroundColor: '#f87171'
+                    },
+                    {
+                        label: 'Cancelados',
+                        data: [],
+                        backgroundColor: '#fbbf24'
+                    }
+                ]
+            },
+            options: { ...commonOptions, indexAxis: 'y', scales: { x: { stacked: true }, y: { stacked: true } } }
+        });
+
+        // Gráfico 3: Evasão por Idade (Barras Verticais)
+        const ctxEvasaoIdade = document.getElementById('evasaoIdadeChart').getContext('2d');
+        charts.evasaoIdade = new Chart(ctxEvasaoIdade, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Total de Evasão',
+                    data: [],
+                    backgroundColor: '#60a5fa',
+                    borderColor: '#3b82f6',
+                    borderWidth: 1
+                }]
+            },
+            options: commonOptions
+        });
+
+        // Gráfico 4: Desistentes vs. Cancelados por Idade (Linhas)
+        const ctxDesistVsCancel = document.getElementById('desistVsCancelChart').getContext('2d');
+        charts.desistVsCancel = new Chart(ctxDesistVsCancel, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Desistentes',
+                        data: [],
+                        borderColor: '#f87171',
+                        backgroundColor: 'rgba(248, 113, 113, 0.2)',
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'Cancelados',
+                        data: [],
+                        borderColor: '#fbbf24',
+                        backgroundColor: 'rgba(251, 191, 36, 0.2)',
+                        tension: 0.3,
+                        fill: true
+                    }
+                ]
+            },
+            options: commonOptions
+        });
+        
+        // Gráfico 5: LTV por Idade (Ativos)
+        const ctxLtvIdade = document.getElementById('ltvIdadeChart').getContext('2d');
+        charts.ltvIdade = new Chart(ctxLtvIdade, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'LTV Médio (R$)',
+                    data: [],
+                    backgroundColor: '#34d399',
+                }]
+            },
+            options: commonOptions
+        });
+
+        // Gráfico 6: Permanência por Idade (Ativos)
+        const ctxPermanenciaIdade = document.getElementById('permanenciaIdadeChart').getContext('2d');
+        charts.permanenciaIdade = new Chart(ctxPermanenciaIdade, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Permanência Média (Meses)',
+                    data: [],
+                    borderColor: '#a78bfa',
+                    backgroundColor: 'rgba(167, 139, 250, 0.2)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: commonOptions
+        });
+    }
+    </script>
 </body>
 </html>
