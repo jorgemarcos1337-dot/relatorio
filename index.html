@@ -1,337 +1,366 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<title>Dashboard Manta – One Page</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Análise de Evasão - Manta</title>
+    <style>
+        :root {
+            --background-color: #f0f2f5;
+            --card-background: #ffffff;
+            --text-color: #333;
+            --header-background: #2c3e50;
+            --header-text-color: #ffffff;
+            --primary-color: #3498db;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --success-color: #2ecc71;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --card-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            --border-radius: 8px;
+        }
+        body {
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding-top: 80px; /* Space for fixed header */
+        }
+        .container {
+            width: 95%;
+            max-width: 1600px;
+            margin: 20px auto;
+            padding: 15px;
+        }
+        /* --- AREA 1: CABEÇALHO --- */
+        header {
+            background-color: var(--header-background);
+            color: var(--header-text-color);
+            padding: 15px 2%;
+            position: fixed;
+            top: 0;
+            width: 96%;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+        .filters {
+            display: flex;
+            gap: 20px;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .filter-group label {
+            font-size: 0.8em;
+            margin-bottom: 5px;
+        }
+        .filter-group select, .export-button {
+            padding: 8px 12px;
+            border-radius: var(--border-radius);
+            border: none;
+            background-color: #fff;
+            color: var(--text-color);
+        }
+        .export-button {
+            background-color: var(--success-color);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
 
-<!-- ====== ESTILO BÁSICO ====== -->
-<style>
-    :root{
-        --c1:#003d5b;--c2:#ffa630;--c3:#f4f4f4;--c4:#f2545b;--c5:#0f4c5c;
-    }
-    *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;}
-    body{margin:0;background:var(--c3);}
-    header{position:sticky;top:0;background:#fff;padding:1rem 2rem;
-           box-shadow:0 2px 6px rgba(0,0,0,.1);z-index:999;}
-    h1{margin:0;color:var(--c1);}
-    .kpi-wrap{display:flex;flex-wrap:wrap;gap:1rem;margin-top:.8rem;}
-    .kpi{flex:1 0 180px;background:var(--c1);color:#fff;padding:1rem;border-radius:6px;}
-    .kpi span{display:block;font-size:.9rem;opacity:.8}
-    .kpi strong{font-size:1.6rem;font-weight:700}
-    .filters{display:flex;flex-wrap:wrap;gap:1rem;margin-top:1rem}
-    select{padding:.4rem .6rem;border:1px solid #ccc;border-radius:4px;}
+        /* --- KPIs --- */
+        .kpi-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .kpi-card {
+            background-color: var(--card-background);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            text-align: center;
+        }
+        .kpi-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.1em;
+            color: #555;
+        }
+        .kpi-value {
+            font-size: 2.2em;
+            font-weight: bold;
+            margin: 0;
+        }
+        .kpi-value.danger { color: var(--danger-color); }
+        .kpi-value.warning { color: var(--warning-color); }
+        .kpi-value.info { color: var(--primary-color); }
 
-    section{padding:2rem;max-width:1300px;margin:auto;}
-    .sec-title{font-weight:600;color:var(--c5);margin-bottom:1rem}
-    .two-cols{display:flex;flex-wrap:wrap;gap:2rem}
-    .col{flex:1 1 480px}
-    canvas{background:#fff;padding:1rem;border-radius:6px;height:320px!important}
-    table.dataTable{width:100%!important;border-collapse:collapse!important;}
-    table.dataTable thead{background:var(--c1);color:#fff}
-    .dt-buttons{margin-bottom:.5rem}
+        /* --- SEÇÕES E GRÁFICOS --- */
+        .section {
+            background-color: var(--card-background);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            margin-bottom: 30px;
+        }
+        .section-title {
+            margin-top: 0;
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--background-color);
+            padding-bottom: 10px;
+        }
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 25px;
+            align-items: start;
+        }
+        .chart-container {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+        }
+        .chart-container h4 {
+            text-align: center;
+            margin-top: 0;
+        }
+        .placeholder-chart {
+            background-color: #fafafa;
+            border: 2px dashed #ccc;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #aaa;
+            font-style: italic;
+            border-radius: var(--border-radius);
+        }
 
-    @media(max-width:800px){
-        .two-cols{flex-direction:column}
-    }
-</style>
+        /* --- AREA 3: LAYOUT EM COLUNAS --- */
+        .columns-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
 
-<!-- ====== LIBS ====== -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<link  href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css" rel="stylesheet">
-<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+        /* --- TABELAS INTERATIVAS --- */
+        .table-container {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        thead th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        tbody tr:hover {
+            background-color: #e9ecef;
+        }
 
+        /* --- Responsividade --- */
+        @media (max-width: 1200px) {
+            .charts-row, .columns-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                position: static;
+                width: 100%;
+            }
+            body { padding-top: 0; }
+            .filters {
+                flex-direction: column;
+                width: 100%;
+                gap: 10px;
+                margin-top: 10px;
+            }
+            .kpi-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* --- Comentários para o programador --- */
+        .dev-notes {
+            background-color: #fffbe6;
+            border: 1px solid #ffe58f;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+        }
+        .dev-notes h3 { margin-top: 0; }
+    </style>
 </head>
 <body>
 
-<header>
-    <h1>Dashboard Manta</h1>
-
-    <!-- FILTROS GLOBAIS -->
-    <div class="filters">
-        <label>
-            Período 
-            <select id="periodFilter">
-                <option value="all">Últimos 12 meses</option>
-                <!-- pronto para outras opções -->
-            </select>
-        </label>
-        <label>
-            Unidade 
-            <select id="unitFilter" multiple size="1">
-                <option value="all" selected>Todas</option>
-                <option>712N</option><option>610S</option><option>VP</option>
-                <option>303SW</option><option>702S</option>
-            </select>
-        </label>
-        <button id="exportBtn">Exportar CSV</button>
-    </div>
-
-    <!-- KPIS -->
-    <div class="kpi-wrap" id="kpiArea">
-        <!-- preenchido via JS -->
-    </div>
-</header>
-
-<!-- ====== PANORAMA EVASÃO ====== -->
-<section>
-    <h2 class="sec-title">Panorama da Evasão</h2>
-    <div class="two-cols">
-        <div class="col">
-            <canvas id="pieMotivo"></canvas>
+    <header>
+        <h1>Dashboard Manta</h1>
+        <div class="filters">
+            <div class="filter-group">
+                <label for="period-filter">Filtro de Período</label>
+                <select id="period-filter">
+                    <option>Últimos 12 meses</option>
+                    <option>Ano Corrente</option>
+                    <option>Últimos 6 meses</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="unit-filter">Filtro por Unidade(s)</label>
+                <select id="unit-filter" multiple>
+                    <option>Todas</option>
+                    <option>712N</option>
+                    <option>610S</option>
+                    <option>VP</option>
+                    <option>303SW</option>
+                    <option>702S</option>
+                </select>
+            </div>
+            <button class="export-button">Exportar para CSV</button>
         </div>
-        <div class="col">
-            <canvas id="barTopUnits"></canvas>
+    </header>
+
+    <main class="container">
+        <div class="kpi-container">
+            <div class="kpi-card">
+                <h3>Nº Total de Alunos Ativos</h3>
+                <p class="kpi-value info">4.441</p>
+            </div>
+            <div class="kpi-card">
+                <h3>Total de Evasão (Período)</h3>
+                <p class="kpi-value warning">2.211</p>
+            </div>
+            <div class="kpi-card">
+                <h3>Taxa de Churn (Período)</h3>
+                <p class="kpi-value warning">33,3%</p>
+            </div>
+            <div class="kpi-card">
+                <h3>Impacto Financeiro Anualizado</h3>
+                <p class="kpi-value danger">R$ 8,9 mi</p>
+            </div>
         </div>
-    </div>
-</section>
 
-<!-- ====== ANÁLISE DETALHADA ====== -->
-<section>
-    <h2 class="sec-title">Análise Detalhada</h2>
-    <div class="two-cols">
-        <div class="col">
-            <canvas id="barEvasaoIdade"></canvas><br>
-            <canvas id="lineTipoIdade"></canvas><br>
-            <table id="tabUnidades" class="display"></table>
+        <section class="section">
+            <h2 class="section-title">Panorama da Evasão: A cara do problema</h2>
+            <div class="charts-row">
+                <div class="chart-container">
+                    <h4>Evasão por Motivo</h4>
+                    <div class="placeholder-chart">(Gráfico de Pizza/Rosca: Desistentes 62% vs. Cancelados 38%)</div>
+                </div>
+                <div class="chart-container">
+                    <h4>Top 5 Unidades com Maior Evasão (Desistentes vs. Cancelados)</h4>
+                    <div class="placeholder-chart">(Gráfico de Barras Horizontais Empilhadas)</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">Análise Detalhada: Evasão vs. Clientes Ativos</h2>
+            <div class="columns-layout">
+                <div class="column">
+                    <div class="chart-container">
+                        <h4>Evasão por Faixa Etária</h4>
+                        <div class="placeholder-chart">(Gráfico de Barras Verticais - pico em 5-6 anos)</div>
+                    </div>
+                    <div class="chart-container">
+                        <h4>Desistentes vs. Cancelados por Idade</h4>
+                        <div class="placeholder-chart">(Gráfico de Linhas Múltiplas)</div>
+                    </div>
+                    <div class="table-container">
+                        <h4>Tabela Detalhada de Unidades</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Unidade &#x25B2;&#x25BC;</th>
+                                    <th>Total Evasão &#x25B2;&#x25BC;</th>
+                                    <th>% Desistentes &#x25B2;&#x25BC;</th>
+                                    <th>Impacto (R$) &#x25B2;&#x25BC;</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>712N</td><td>704</td><td>67,0%</td><td>R$ 278.319,36</td></tr>
+                                <tr><td>610S</td><td>584</td><td>56,2%</td><td>R$ 194.699,76</td></tr>
+                                <tr><td>VP</td><td>385</td><td>54,5%</td><td>R$ 70.766,85</td></tr>
+                                <tr><td>303SW</td><td>282</td><td>63,1%</td><td>R$ 101.917,62</td></tr>
+                                <tr><td>702S</td><td>256</td><td>69,5%</td><td>R$ 96.061,44</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="column">
+                    <div class="chart-container">
+                        <h4>LTV Médio por Faixa Etária</h4>
+                        <div class="placeholder-chart">(Gráfico de Barras Verticais)</div>
+                    </div>
+                    <div class="chart-container">
+                        <h4>Tempo Médio de Permanência por Idade (meses)</h4>
+                        <div class="placeholder-chart">(Gráfico de Linhas)</div>
+                    </div>
+                    <div class="table-container">
+                        <h4>Tabela de Ativos por Idade</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Idade &#x25B2;&#x25BC;</th>
+                                    <th>Nº Ativos &#x25B2;&#x25BC;</th>
+                                    <th>Tempo Médio &#x25B2;&#x25BC;</th>
+                                    <th>LTV Médio (R$) &#x25B2;&#x25BC;</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>4</td><td>454</td><td>20.4</td><td>R$ 7.135,95</td></tr>
+                                <tr><td>5</td><td>444</td><td>23.6</td><td>R$ 8.245,85</td></tr>
+                                <tr><td>6</td><td>397</td><td>26.0</td><td>R$ 9.091,44</td></tr>
+                                <tr><td>12</td><td>52</td><td>32.2</td><td>R$ 11.279,57</td></tr>
+                                <tr><td>67</td><td>16</td><td>85.8</td><td>R$ 30.015,60</td></tr>
+                                <tr><td>89</td><td>2</td><td>99.8</td><td>R$ 34.919,51</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="dev-notes">
+            <h3>&#x1F4BB; Instruções para o Programador (Funcionalidades Chave)</h3>
+            <ul>
+                <li><strong>Estado Único (One-Page Core):</strong> A página não deve recarregar. Filtros devem atualizar os gráficos e tabelas instantaneamente (via JavaScript).</li>
+                <li><strong>Cross-Filtering Total:</strong> Esta é a funcionalidade mais importante. Clicar em um elemento de qualquer gráfico (ex: a fatia "Desistentes" da pizza, a barra "712N", a faixa etária "5 anos") deve filtrar TODOS OS OUTROS GRÁFICOS E TABELAS na página inteira.</li>
+                <li><strong>Tooltips Detalhados:</strong> Ao passar o mouse sobre qualquer elemento de um gráfico (barras, fatias, pontos de linha), uma janela flutuante (tooltip) deve exibir os números exatos e porcentagens correspondentes.</li>
+                <li><strong>Exportação de Dados:</strong> O botão "Exportar para CSV" no cabeçalho deve gerar um arquivo com os dados da visão atual, respeitando os filtros aplicados.</li>
+                <li><strong>Tabelas Ordenáveis:</strong> As colunas das tabelas detalhadas devem ser ordenáveis ao clicar no cabeçalho.</li>
+                <li><strong>Layout Responsivo:</strong> Garantir que o design se adapte perfeitamente a desktops, tablets e celulares, conforme as regras de CSS já estabelecidas.</li>
+            </ul>
         </div>
-        <div class="col">
-            <canvas id="barLtvIdade"></canvas><br>
-            <canvas id="lineTempoIdade"></canvas><br>
-            <table id="tabAtivos"  class="display"></table>
-        </div>
-    </div>
-</section>
-
-<!-- =================== JS PRINCIPAL =================== -->
-<script>
-/* ======= DADOS (extraídos do DOCX) ======= */
-const raw = {
-    kpis:{ativos:4441,evasao:2211,churn:'33,3%',impacto:'R$ 8.901.180,36'},
-    motivo:{desistentes:1366,cancelados:845},
-    unidades:[
-        {unidade:'712N',evasao:704,desistentes:472,cancelados:232,percDes:67,impacto:278319.36},
-        {unidade:'610S',evasao:584,desistentes:328,cancelados:256,percDes:56.2,impacto:194699.76},
-        {unidade:'VP',   evasao:385,desistentes:210,cancelados:175,percDes:54.5,impacto:70766.85},
-        {unidade:'303SW',evasao:282,desistentes:178,cancelados:104,percDes:63.1,impacto:101917.62},
-        {unidade:'702S',evasao:256,desistentes:178,cancelados:78, percDes:69.5,impacto:96061.44}
-    ],
-    idadeEvasao:[
-        {idade:0, total:69},{idade:1,total:268},{idade:2,total:373},{idade:3,total:402},
-        {idade:4,total:454},{idade:5,total:444},{idade:6,total:397},/* … simplificado */ 
-        {idade:12,total:52},{idade:13,total:43},{idade:14,total:31}
-    ],
-    idadeLtv:[ /* dados resumidos */ 
-        {idade:0, ltv:735},{idade:4, ltv:7136},{idade:5,ltv:8245},{idade:12,ltv:11280},
-        {idade:65,ltv:13556},{idade:89,ltv:34920}
-    ],
-    idadeTempo:[
-        {idade:0, tempo:2.1},{idade:4,tempo:20.4},{idade:5,tempo:23.6},{idade:12,tempo:32.2},
-        {idade:65,tempo:38.7},{idade:89,tempo:99.8}
-    ],
-    tipoPorIdade:[
-        {idade:5,des:300,can:65},{idade:6,des:280,can:117} /* exemplo */
-    ],
-    ativosPorIdade:[
-        {idade:4,ativos:454,tempo:20.4,ltv:7135.95},/* ... */
-    ]
-};
-
-/* ========== ESTADO GLOBAL / FILTROS ========== */
-let state = {period:'all',units:['all']};
-
-/* ========== FUNÇÕES DE FILTRO ========== */
-function applyFilters(dataKey){
-    if(state.units.includes('all')) return raw[dataKey];
-    return raw[dataKey].filter(d=> state.units.includes(d.unidade));
-}
-
-/* ========== RENDER KPIs ========== */
-function renderKpis(){
-    const area=document.getElementById('kpiArea');
-    area.innerHTML='';
-    const k = raw.kpis;
-    const items=[
-        {lbl:'Alunos Ativos',val:k.ativos},
-        {lbl:'Total Evasão',val:k.evasao},
-        {lbl:'Taxa de Churn',val:k.churn},
-        {lbl:'Impacto Anual',val:k.impacto}
-    ];
-    items.forEach(i=>{
-        area.insertAdjacentHTML('beforeend',
-            `<div class="kpi"><span>${i.lbl}</span><strong>${i.val}</strong></div>`);
-    });
-}
-
-/* ========== CHART HELPERS ========== */
-const chartObjs={};         // armazena instâncias para atualização
-function makeChart(id, type, cfg){            // cria ou atualiza
-    if(chartObjs[id]){chartObjs[id].destroy();}
-    chartObjs[id]=new Chart(document.getElementById(id),cfg);
-}
-/* ========== PANORAMA ========= */
-function renderMotivo(){
-    const d=raw.motivo;
-    makeChart('pieMotivo','pie',{
-        type:'doughnut',
-        data:{labels:['Desistentes','Cancelados'],
-              datasets:[{data:[d.desistentes,d.cancelados],
-                         backgroundColor:[ 'var(--c4)','var(--c2)']}]},
-        options:{plugins:{tooltip:{callbacks:{
-                    label:(ctx)=>(ctx.label+': '+ctx.parsed+' ('+
-                        (ctx.parsed*100/(d.desistentes+d.cancelados)).toFixed(1)+'%)')}}}}
-    });
-    // clique -> filtro
-    document.getElementById('pieMotivo').onclick=e=>{
-        const p=chartObjs.pieMotivo.getElementsAtEventForMode(e,'nearest',{intersect:true},true);
-        if(!p.length) return;
-        alert('Exemplo: aqui você poderia aplicar filtro por tipo ('+p[0].index+')');
-    };
-}
-
-function renderTopUnits(){
-    const data=applyFilters('unidades').slice().sort((a,b)=>b.evasao-a.evasao).slice(0,5);
-    makeChart('barTopUnits','bar',{
-        type:'bar',
-        data:{
-          labels:data.map(d=>d.unidade),
-          datasets:[
-            {label:'Desistentes',data:data.map(d=>d.desistentes),backgroundColor:'var(--c4)'},
-            {label:'Cancelados', data:data.map(d=>d.cancelados), backgroundColor:'var(--c2)'}
-          ]
-        },
-        options:{indexAxis:'y',responsive:true,scales:{x:{stacked:true},y:{stacked:true}}}
-    });
-    document.getElementById('barTopUnits').onclick=e=>{
-        const p=chartObjs.barTopUnits.getElementsAtEventForMode(e,'nearest',{intersect:true},true);
-        if(!p.length) return;
-        const un=data[p[0].index].unidade;
-        state.units=[un];
-        document.querySelectorAll('#unitFilter option').forEach(o=>o.selected=(o.value===un));
-        renderAll();
-    };
-}
-
-/* ========= DETALHADO ========= */
-function renderDetalhado(){
-    /* Barras evasão idade */
-    makeChart('barEvasaoIdade','bar',{
-        type:'bar',
-        data:{
-            labels:raw.idadeEvasao.map(d=>d.idade),
-            datasets:[{label:'Alunos Perdidos',data:raw.idadeEvasao.map(d=>d.total),
-                       backgroundColor:'var(--c4)'}]
-        },
-        options:{responsive:true}
-    });
-
-    /* Linhas tipo por idade (dados exemplo) */
-    makeChart('lineTipoIdade','line',{
-        type:'line',
-        data:{
-            labels:raw.tipoPorIdade.map(d=>d.idade),
-            datasets:[
-                {label:'Desistentes',data:raw.tipoPorIdade.map(d=>d.des),
-                 borderColor:'var(--c4)',fill:false},
-                {label:'Cancelados',data:raw.tipoPorIdade.map(d=>d.can),
-                 borderColor:'var(--c2)',fill:false}
-            ]
-        }
-    });
-
-    /* LTV por idade */
-    makeChart('barLtvIdade','bar',{
-        type:'bar',
-        data:{
-            labels:raw.idadeLtv.map(d=>d.idade),
-            datasets:[{label:'LTV médio (R$)',data:raw.idadeLtv.map(d=>d.ltv),
-                       backgroundColor:'var(--c1)'}]
-        }
-    });
-
-    /* Tempo por idade */
-    makeChart('lineTempoIdade','line',{
-        type:'line',
-        data:{
-            labels:raw.idadeTempo.map(d=>d.idade),
-            datasets:[{label:'Tempo médio (meses)',data:raw.idadeTempo.map(d=>d.tempo),
-                       borderColor:'var(--c1)',fill:false}]
-        }
-    });
-}
-
-/* ========= TABELAS ========= */
-let dtUnits,dtAtivos;
-function renderTables(){
-    // Unidades
-    if(dtUnits)dtUnits.destroy();
-    dtUnits = $('#tabUnidades').DataTable({
-        data:raw.unidades,
-        columns:[
-            {title:'Unidade',data:'unidade'},
-            {title:'Total Evasão',data:'evasao'},
-            {title:'Desistentes',data:'desistentes'},
-            {title:'Cancelados',data:'cancelados'},
-            {title:'% Desistentes',data:'percDes',
-             render:d=>d.toFixed(1)+' %'},
-            {title:'Impacto Mensal (R$)',data:'impacto',
-             render:d=>d.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
-        ],
-        paging:false,info:false
-    });
-    $('#tabUnidades tbody').on('click','tr',function(){
-        const un=dtUnits.row(this).data().unidade;
-        state.units=[un]; renderAll();
-    });
-
-    // Ativos por idade
-    if(dtAtivos)dtAtivos.destroy();
-    dtAtivos = $('#tabAtivos').DataTable({
-        data:raw.ativosPorIdade,
-        columns:[
-            {title:'Idade',data:'idade'},
-            {title:'Nº Ativos',data:'ativos'},
-            {title:'Tempo Médio (meses)',data:'tempo'},
-            {title:'LTV Médio (R$)',data:'ltv',
-             render:d=>d.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
-        ],
-        paging:false,info:false
-    });
-}
-
-/* ========= EXPORTAÇÃO ========= */
-function exportCSV() {
-    let csv='Unidade,Evasao,Desistentes,Cancelados,Impacto\n';
-    applyFilters('unidades').forEach(r=>{
-        csv+=`${r.unidade},${r.evasao},${r.desistentes},${r.cancelados},${r.impacto}\n`;
-    });
-    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);
-    a.download='dashboard-manta.csv';
-    a.click();
-}
-
-/* ========= EVENTOS UI ========= */
-document.getElementById('unitFilter').addEventListener('change',e=>{
-    const opts=[...e.target.options].filter(o=>o.selected).map(o=>o.value);
-    state.units=opts.length?opts:['all']; renderAll();
-});
-document.getElementById('periodFilter').addEventListener('change',e=>{
-    state.period=e.target.value; renderAll();
-});
-document.getElementById('exportBtn').addEventListener('click',exportCSV);
-
-/* ========= RENDER GERAL ========= */
-function renderAll(){
-    renderKpis();
-    renderMotivo();
-    renderTopUnits();
-    renderDetalhado();
-    renderTables();
-}
-renderAll();
-</script>
+    </main>
 
 </body>
 </html>
