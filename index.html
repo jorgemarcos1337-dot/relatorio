@@ -1,516 +1,337 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diagnóstico Completo da Evasão de Alunos - Manta Formação Aquática</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8;
-        }
-        .chart-container {
-            position: relative;
-            width: 100%;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 350px;
-            max-height: 400px;
-        }
-        @media (min-width: 768px) {
-            .chart-container {
-                height: 400px;
-            }
-        }
-        .kpi-card {
-            background-color: #073B4C;
-            color: white;
-            padding: 1.5rem;
-            border-radius: 0.5rem;
-            text-align: center;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .kpi-number {
-            font-size: 2.2rem;
-            font-weight: 700;
-            line-height: 1;
-            color: #FFD166;
-        }
-        .kpi-label {
-            font-size: 0.85rem;
-            margin-top: 0.5rem;
-            color: #E2E8F0;
-        }
-        .detailed-section {
-             background-color: #e6eef5;
-             border-top: 4px solid #118AB2;
-             border-bottom: 4px solid #118AB2;
-        }
-        .formula {
-            background-color: #e2e8f0;
-            padding: 0.5rem 1rem;
-            border-radius: 0.25rem;
-            font-family: monospace;
-            font-size: 0.9em;
-            color: #073B4C;
-            border-left: 3px solid #06D6A0;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Dashboard Manta – One Page</title>
+
+<!-- ====== ESTILO BÁSICO ====== -->
+<style>
+    :root{
+        --c1:#003d5b;--c2:#ffa630;--c3:#f4f4f4;--c4:#f2545b;--c5:#0f4c5c;
+    }
+    *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;}
+    body{margin:0;background:var(--c3);}
+    header{position:sticky;top:0;background:#fff;padding:1rem 2rem;
+           box-shadow:0 2px 6px rgba(0,0,0,.1);z-index:999;}
+    h1{margin:0;color:var(--c1);}
+    .kpi-wrap{display:flex;flex-wrap:wrap;gap:1rem;margin-top:.8rem;}
+    .kpi{flex:1 0 180px;background:var(--c1);color:#fff;padding:1rem;border-radius:6px;}
+    .kpi span{display:block;font-size:.9rem;opacity:.8}
+    .kpi strong{font-size:1.6rem;font-weight:700}
+    .filters{display:flex;flex-wrap:wrap;gap:1rem;margin-top:1rem}
+    select{padding:.4rem .6rem;border:1px solid #ccc;border-radius:4px;}
+
+    section{padding:2rem;max-width:1300px;margin:auto;}
+    .sec-title{font-weight:600;color:var(--c5);margin-bottom:1rem}
+    .two-cols{display:flex;flex-wrap:wrap;gap:2rem}
+    .col{flex:1 1 480px}
+    canvas{background:#fff;padding:1rem;border-radius:6px;height:320px!important}
+    table.dataTable{width:100%!important;border-collapse:collapse!important;}
+    table.dataTable thead{background:var(--c1);color:#fff}
+    .dt-buttons{margin-bottom:.5rem}
+
+    @media(max-width:800px){
+        .two-cols{flex-direction:column}
+    }
+</style>
+
+<!-- ====== LIBS ====== -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<link  href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css" rel="stylesheet">
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+
 </head>
-<body class="text-gray-800">
+<body>
 
-    <div class="container mx-auto p-4 md:p-8">
+<header>
+    <h1>Dashboard Manta</h1>
 
-        <header class="text-center mb-12">
-            <h1 class="text-4xl md:text-5xl font-bold text-[#073B4C] mb-2">Diagnóstico Completo da Evasão de Alunos</h1>
-            <p class="text-lg text-gray-600">Manta Formação Aquática | Análise Definitiva: Janeiro a Agosto de 2025</p>
-        </header>
-
-        <section class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            <div class="kpi-card">
-                <div class="kpi-number">1.490</div>
-                <div class="kpi-label">Alunos Evadidos</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-number">R$ 10,3 Mi</div>
-                <div class="kpi-label">Receita Perdida (LTV Real)</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-number">R$ 6.934</div>
-                <div class="kpi-label">LTV Médio por Aluno</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-number">20,7 meses</div>
-                <div class="kpi-label">Permanência Média (Alunos Veteranos)</div>
-            </div>
-        </section>
-
-        <main class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-2xl font-bold mb-1 text-[#073B4C]">Motivos da Saída Ativa</h2>
-                <p class="text-gray-600 mb-4">A análise mostra que a "Desistência" é o principal ponto de atenção, representando uma decisão ativa do cliente e superando os cancelamentos formais.</p>
-                <div class="chart-container h-[300px] max-h-[350px]">
-                    <canvas id="statusChart"></canvas>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-2xl font-bold mb-1 text-[#073B4C]">Volume de Evasão por Unidade</h2>
-                <p class="text-gray-600 mb-4">A unidade 712N responde pelo maior volume de saídas, seguida de perto pela 610S. Compreender as particularidades de cada operação é fundamental para ações de retenção.</p>
-                <div class="chart-container h-[300px] max-h-[350px]">
-                    <canvas id="unidadeChart"></canvas>
-                </div>
-            </div>
-
-            <div class="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-2xl font-bold mb-1 text-[#073B4C]">Tempo Médio de Permanência por Unidade</h2>
-                <p class="text-gray-600 mb-4">O tempo que um aluno permanece na Manta (LT) é um indicador-chave da experiência. A 702S retém alunos por mais tempo, enquanto a VP apresenta o ciclo mais curto. Um LT médio alto (20,7 meses) indica que estamos perdendo alunos de longo prazo.</p>
-                <div class="chart-container h-[400px] max-h-[450px]">
-                    <canvas id="ltUnidadeChart"></canvas>
-                </div>
-            </div>
-        </main>
-        
-        <section class="detailed-section py-12 my-12 px-6 rounded-lg">
-            <div class="text-center">
-                <h2 class="text-3xl font-bold text-[#073B4C] mb-2">Análise Detalhada por Faixa Etária Manta</h2>
-                <p class="text-lg text-gray-600 max-w-3xl mx-auto mb-8">Utilizando as faixas etárias oficiais da Manta, a análise se torna mais estratégica. A evasão está concentrada nas fases de desenvolvimento infantil, com picos nas faixas de 9-12 anos e 5-6 anos.</p>
-            </div>
-            <div class="bg-white rounded-lg shadow-md p-6">
-                 <div class="chart-container h-[450px] max-h-[500px]">
-                    <canvas id="faixaEtariaMantaChart"></canvas>
-                </div>
-            </div>
-        </section>
-
-        <section class="my-12">
-             <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold text-[#073B4C] mb-2">A Profundidade do Impacto Financeiro</h2>
-                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Para entender a dimensão real da evasão, é crucial detalhar como os valores foram calculados.</p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="bg-white rounded-lg shadow-md p-6">
-                    <h3 class="text-2xl font-bold text-[#073B4C] mb-3">Receita Perdida (LTV Real): R$ 10,3 Milhões</h3>
-                    <p class="text-gray-600 mb-4">Este valor representa a soma do faturamento total que cada um dos 1.490 alunos evadidos teria gerado se continuasse na Manta. É o valor real do relacionamento perdido, calculado individualmente.</p>
-                    <p class="formula">LTV Real Total = Σ (LT de cada aluno × Ticket Médio da sua Unidade)</p>
-                    <p class="text-gray-600 mt-4">Essa métrica é mais precisa que uma simples projeção mensal, pois considera o tempo que cada aluno efetivamente ficou e o valor específico de sua unidade.</p>
-                </div>
-                <div class="bg-white rounded-lg shadow-md p-6">
-                     <h3 class="text-2xl font-bold text-[#073B4C] mb-3">LTV Médio por Aluno: R$ 6.934</h3>
-                    <p class="text-gray-600 mb-4">Em média, cada aluno que decidiu sair representava um valor de quase R$ 7.000 para o negócio ao longo de sua jornada. Este número reflete o potencial de receita de cada matrícula.</p>
-                    <p class="formula">LTV Médio = Permanência Média (20,7 meses) × Ticket Médio Ponderado (R$ 336,36)</p>
-                     <p class="text-gray-600 mt-4">O LTV médio é um indicador poderoso para guiar decisões de investimento em marketing e retenção, mostrando quanto se pode investir para manter um aluno.</p>
-                </div>
-            </div>
-        </section>
-        
-        <section class="my-12 bg-white rounded-lg shadow-md p-6">
-             <h2 class="text-2xl font-bold text-[#073B4C] mb-4 text-center">Metodologia e Glossário</h2>
-             <dl class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-                 <div>
-                     <dt class="font-bold text-lg text-gray-800">LT (Lifetime)</dt>
-                     <dd class="text-gray-600">O tempo total, em meses, que um aluno permaneceu matriculado desde o seu primeiro dia até a data da sua saída. Um LT alto indica boa retenção.</dd>
-                 </div>
-                 <div>
-                     <dt class="font-bold text-lg text-gray-800">LTV (Lifetime Value)</dt>
-                     <dd class="text-gray-600">A receita total que um aluno gera durante toda a sua permanência. O LTV Real é a soma do LTV de todos os alunos que evadiram.</dd>
-                 </div>
-                 <div>
-                     <dt class="font-bold text-lg text-gray-800">Ticket Médio Ponderado</dt>
-                     <dd class="text-gray-600">O ticket médio geral da Manta (R$ 336,36), calculado levando em conta o peso (número de alunos ativos) de cada unidade para projeções futuras.</dd>
-                 </div>
-             </dl>
-        </section>
-
-        <div class="lg:col-span-2 bg-white rounded-lg shadow-md p-8 text-center mt-8 mb-8">
-            <h2 class="text-3xl font-bold mb-4 text-[#073B4C]">Diagnóstico Final: O Perfil da Evasão</h2>
-            <div class="bg-blue-50 border-l-4 border-[#118AB2] p-6 my-4 text-lg text-gray-700 text-left">
-                <p class="mb-2">Com base na análise precisa dos dados corretos, o perfil e o problema central da evasão na Manta são:</p>
-                <ul class="list-disc list-inside space-y-2">
-                    <li><strong>Perfil da Perda:</strong> Alunos veteranos, com permanência média de 20,7 meses (quase 2 anos).</li>
-                    <li><strong>Motivo Principal:</strong> Saída por Desistência (888 alunos, 59,6%), uma decisão ativa que sugere quebra de expectativa.</li>
-                    <li><strong>Epicentro (Volume):</strong> O público infantil, especialmente na faixa de 9-12 anos (255 alunos), e na unidade 712N (456 alunos).</li>
-                    <li><strong>Impacto Financeiro Real:</strong> Cada evasão representa uma perda média de R$ 6.934 (LTV), totalizando R$ 10.331.660 em valor perdido no período.</li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Seção de Validação de Dados -->
-        <section class="my-12 bg-white rounded-lg shadow-md p-8">
-            <h2 class="text-3xl font-bold text-[#073B4C] mb-6 text-center">Validação e Consistência dos Dados</h2>
-            <p class="text-gray-600 mb-6 text-center max-w-3xl mx-auto">Todos os dados foram verificados e validados cruzadamente para garantir precisão absoluta na análise.</p>
-            <div class="overflow-x-auto">
-                <table class="w-full border-collapse">
-                    <thead>
-                        <tr class="bg-[#073B4C] text-white">
-                            <th class="border border-gray-300 px-4 py-3 text-left">Verificação</th>
-                            <th class="border border-gray-300 px-4 py-3 text-left">Cálculo</th>
-                            <th class="border border-gray-300 px-4 py-3 text-center">Resultado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="bg-gray-50">
-                            <td class="border border-gray-300 px-4 py-3">Total de Alunos</td>
-                            <td class="border border-gray-300 px-4 py-3">456 + 384 + 285 + 199 + 166</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center font-bold">1.490 ✅</td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 px-4 py-3">Total Desistentes</td>
-                            <td class="border border-gray-300 px-4 py-3">299 + 199 + 161 + 120 + 109</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center font-bold">888 ✅</td>
-                        </tr>
-                        <tr class="bg-gray-50">
-                            <td class="border border-gray-300 px-4 py-3">Total Cancelados</td>
-                            <td class="border border-gray-300 px-4 py-3">157 + 185 + 124 + 79 + 57</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center font-bold">602 ✅</td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 px-4 py-3 font-bold">Consistência Total</td>
-                            <td class="border border-gray-300 px-4 py-3">Desistentes + Cancelados (888 + 602)</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center font-bold text-green-600">1.490 ✅</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- Seção de Análise Detalhada por Unidade -->
-        <section class="my-12 bg-[#f8fbfd] rounded-lg p-8">
-            <h2 class="text-3xl font-bold text-[#073B4C] mb-6 text-center">Performance Detalhada por Unidade</h2>
-            <p class="text-gray-600 mb-6 text-center max-w-3xl mx-auto">A análise por unidade revela padrões distintos de retenção e impacto financeiro.</p>
-            <div class="overflow-x-auto">
-                <table class="w-full border-collapse bg-white rounded-lg shadow">
-                    <thead>
-                        <tr class="bg-[#118AB2] text-white">
-                            <th class="border border-gray-300 px-4 py-3 text-left">Unidade</th>
-                            <th class="border border-gray-300 px-4 py-3 text-center">Alunos Evadidos</th>
-                            <th class="border border-gray-300 px-4 py-3 text-center">% do Total</th>
-                            <th class="border border-gray-300 px-4 py-3 text-center">Permanência Média</th>
-                            <th class="border border-gray-300 px-4 py-3 text-right">Receita Perdida (LTV)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="hover:bg-blue-50 transition-colors">
-                            <td class="border border-gray-300 px-4 py-3 font-bold">712N</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">456</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">30,6%</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">21,7 meses</td>
-                            <td class="border border-gray-300 px-4 py-3 text-right font-bold">R$ 3.911.230</td>
-                        </tr>
-                        <tr class="bg-gray-50 hover:bg-blue-50 transition-colors">
-                            <td class="border border-gray-300 px-4 py-3 font-bold">610S</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">384</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">25,8%</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">21,5 meses</td>
-                            <td class="border border-gray-300 px-4 py-3 text-right font-bold">R$ 2.753.765</td>
-                        </tr>
-                        <tr class="hover:bg-blue-50 transition-colors">
-                            <td class="border border-gray-300 px-4 py-3 font-bold">VP</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">285</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">19,1%</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">14,8 meses</td>
-                            <td class="border border-gray-300 px-4 py-3 text-right font-bold">R$ 775.298</td>
-                        </tr>
-                        <tr class="bg-gray-50 hover:bg-blue-50 transition-colors">
-                            <td class="border border-gray-300 px-4 py-3 font-bold">303SW</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">199</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">13,4%</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">19,3 meses</td>
-                            <td class="border border-gray-300 px-4 py-3 text-right font-bold">R$ 1.385.940</td>
-                        </tr>
-                        <tr class="hover:bg-blue-50 transition-colors">
-                            <td class="border border-gray-300 px-4 py-3 font-bold">702S</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">166</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">11,1%</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center text-green-600 font-bold">28,3 meses ⬆</td>
-                            <td class="border border-gray-300 px-4 py-3 text-right font-bold">R$ 1.705.427</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="mt-6 bg-blue-50 border-l-4 border-[#06D6A0] p-4">
-                <p class="text-gray-700"><strong>Insight Crítico:</strong> A unidade 702S demonstra capacidade de retenção superior (28,3 meses), mantendo alunos por quase 4 meses a mais que a média. Em contraste, VP apresenta o menor ciclo de vida (14,8 meses).</p>
-            </div>
-        </section>
-
-        <!-- Tabela Completa de Faixas Etárias -->
-        <section class="my-12 bg-white rounded-lg shadow-md p-8">
-            <h2 class="text-3xl font-bold text-[#073B4C] mb-6 text-center">Análise Completa por Faixa Etária Manta</h2>
-            <p class="text-gray-600 mb-6 text-center max-w-3xl mx-auto">O perfil etário revela dois polos críticos: desenvolvimento infantil e público maduro.</p>
-            <div class="overflow-x-auto">
-                <table class="w-full border-collapse">
-                    <thead>
-                        <tr class="bg-[#073B4C] text-white">
-                            <th class="border border-gray-300 px-4 py-3 text-left">Faixa Etária Manta</th>
-                            <th class="border border-gray-300 px-4 py-3 text-center">Alunos Evadidos</th>
-                            <th class="border border-gray-300 px-4 py-3 text-center">% do Total</th>
-                            <th class="border border-gray-300 px-4 py-3 text-center">Permanência Média</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="bg-red-50">
-                            <td class="border border-gray-300 px-4 py-3 font-bold">9-12: AP 2, 3</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center font-bold">255</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">17,1%</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">28,3 meses</td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 px-4 py-3 font-bold">5-6: Iniciação</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center font-bold">248</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">16,6%</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">22,8 meses</td>
-                        </tr>
-                        <tr class="bg-gray-50">
-                            <td class="border border-gray-300 px-4 py-3 font-bold">7-8: AP 1</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">209</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">14,0%</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">25,5 meses</td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 px-4 py-3">3-4: Adaptação</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">197</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">13,2%</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">15,4 meses</td>
-                        </tr>
-                        <tr class="bg-gray-50">
-                            <td class="border border-gray-300 px-4 py-3">0-2: Bebê</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">149</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">10,0%</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">9,2 meses</td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 px-4 py-3">36-45: Adulto 2</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">107</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">7,2%</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">11,3 meses</td>
-                        </tr>
-                        <tr class="bg-green-50">
-                            <td class="border border-gray-300 px-4 py-3 font-bold">56+: Adulto 4</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">101</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">6,8%</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center font-bold text-green-600">34,3 meses ⬆</td>
-                        </tr>
-                        <tr>
-                            <td class="border border-gray-300 px-4 py-3">25-35: Adulto 1</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">94</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">6,3%</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">7,5 meses</td>
-                        </tr>
-                        <tr class="bg-gray-50">
-                            <td class="border border-gray-300 px-4 py-3">46-55: Adulto 3</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">63</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">4,2%</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">19,1 meses</td>
-                        </tr>
-                        <tr class="bg-green-50">
-                            <td class="border border-gray-300 px-4 py-3">13-17: Adolescente</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">51</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">3,4%</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center font-bold text-green-600">29,5 meses ⬆</td>
-                        </tr>
-                        <tr class="bg-gray-50">
-                            <td class="border border-gray-300 px-4 py-3">18-24: Jovem Adulto</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">16</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">1,1%</td>
-                            <td class="border border-gray-300 px-4 py-3 text-center">11,9 meses</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="mt-6 bg-yellow-50 border-l-4 border-[#FFD166] p-4">
-                <p class="text-gray-700"><strong>Insight Financeiro:</strong> Os alunos que ficam mais tempo (e portanto têm maior LTV) são os mais velhos (56+: 34,3 meses) e os adolescentes (13-17: 29,5 meses). A perda destes grupos, embora menor em volume, é financeiramente mais dolorosa.</p>
-            </div>
-        </section>
-
-        <!-- Seção de Análise Financeira Expandida -->
-        <section class="my-12 bg-gradient-to-r from-[#073B4C] to-[#118AB2] text-white rounded-lg p-8">
-            <h2 class="text-3xl font-bold mb-6 text-center">Análise Financeira Detalhada</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="bg-white/10 backdrop-blur rounded-lg p-6">
-                    <h3 class="text-2xl font-bold mb-3 text-[#FFD166]">Metodologia LTV Real</h3>
-                    <p class="mb-4">Para o cálculo preciso da receita perdida de R$ 10.331.660, utilizamos:</p>
-                    <div class="bg-white/20 p-3 rounded font-mono text-sm mb-3">
-                        LTV Individual = (Data Saída - Data Matrícula) × Ticket Médio da Unidade
-                    </div>
-                    <p>Este método soma o LTV individual de cada um dos 1.490 alunos evadidos, refletindo o valor exato perdido.</p>
-                </div>
-                <div class="bg-white/10 backdrop-blur rounded-lg p-6">
-                    <h3 class="text-2xl font-bold mb-3 text-[#06D6A0]">Ticket Médio Ponderado</h3>
-                    <p class="mb-4">Para projeções futuras, o ticket médio ponderado atual é:</p>
-                    <div class="text-4xl font-bold text-[#FFD166] mb-3">R$ 336,36</div>
-                    <p>Calculado com base nos alunos ativos de cada unidade, este valor representa a média real por aluno que a Manta fatura hoje.</p>
-                </div>
-            </div>
-        </section>
-
+    <!-- FILTROS GLOBAIS -->
+    <div class="filters">
+        <label>
+            Período 
+            <select id="periodFilter">
+                <option value="all">Últimos 12 meses</option>
+                <!-- pronto para outras opções -->
+            </select>
+        </label>
+        <label>
+            Unidade 
+            <select id="unitFilter" multiple size="1">
+                <option value="all" selected>Todas</option>
+                <option>712N</option><option>610S</option><option>VP</option>
+                <option>303SW</option><option>702S</option>
+            </select>
+        </label>
+        <button id="exportBtn">Exportar CSV</button>
     </div>
 
-    <script>
-        const colorPalette = {
-            red: '#EF476F',
-            yellow: '#FFD166',
-            green: '#06D6A0',
-            blue: '#118AB2',
-            darkBlue: '#073B4C'
-        };
+    <!-- KPIS -->
+    <div class="kpi-wrap" id="kpiArea">
+        <!-- preenchido via JS -->
+    </div>
+</header>
 
-        const defaultChartOptions = {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'top',
-                },
-                tooltip: {
-                    callbacks: {
-                        title: function(tooltipItems) {
-                            const item = tooltipItems[0];
-                            let label = item.chart.data.labels[item.dataIndex];
-                            if (Array.isArray(label)) {
-                                return label.join(' ');
-                            }
-                            return label;
-                        }
-                    }
-                }
-            }
-        };
-        
-        function wrapLabel(label, maxLength = 16) {
-            if (label.length <= maxLength) {
-                return label;
-            }
-            const words = label.split(' ');
-            const lines = [];
-            let currentLine = '';
-            for (const word of words) {
-                if ((currentLine + word).length > maxLength && currentLine.length > 0) {
-                    lines.push(currentLine.trim());
-                    currentLine = '';
-                }
-                currentLine += word + ' ';
-            }
-            lines.push(currentLine.trim());
-            return lines;
+<!-- ====== PANORAMA EVASÃO ====== -->
+<section>
+    <h2 class="sec-title">Panorama da Evasão</h2>
+    <div class="two-cols">
+        <div class="col">
+            <canvas id="pieMotivo"></canvas>
+        </div>
+        <div class="col">
+            <canvas id="barTopUnits"></canvas>
+        </div>
+    </div>
+</section>
+
+<!-- ====== ANÁLISE DETALHADA ====== -->
+<section>
+    <h2 class="sec-title">Análise Detalhada</h2>
+    <div class="two-cols">
+        <div class="col">
+            <canvas id="barEvasaoIdade"></canvas><br>
+            <canvas id="lineTipoIdade"></canvas><br>
+            <table id="tabUnidades" class="display"></table>
+        </div>
+        <div class="col">
+            <canvas id="barLtvIdade"></canvas><br>
+            <canvas id="lineTempoIdade"></canvas><br>
+            <table id="tabAtivos"  class="display"></table>
+        </div>
+    </div>
+</section>
+
+<!-- =================== JS PRINCIPAL =================== -->
+<script>
+/* ======= DADOS (extraídos do DOCX) ======= */
+const raw = {
+    kpis:{ativos:4441,evasao:2211,churn:'33,3%',impacto:'R$ 8.901.180,36'},
+    motivo:{desistentes:1366,cancelados:845},
+    unidades:[
+        {unidade:'712N',evasao:704,desistentes:472,cancelados:232,percDes:67,impacto:278319.36},
+        {unidade:'610S',evasao:584,desistentes:328,cancelados:256,percDes:56.2,impacto:194699.76},
+        {unidade:'VP',   evasao:385,desistentes:210,cancelados:175,percDes:54.5,impacto:70766.85},
+        {unidade:'303SW',evasao:282,desistentes:178,cancelados:104,percDes:63.1,impacto:101917.62},
+        {unidade:'702S',evasao:256,desistentes:178,cancelados:78, percDes:69.5,impacto:96061.44}
+    ],
+    idadeEvasao:[
+        {idade:0, total:69},{idade:1,total:268},{idade:2,total:373},{idade:3,total:402},
+        {idade:4,total:454},{idade:5,total:444},{idade:6,total:397},/* … simplificado */ 
+        {idade:12,total:52},{idade:13,total:43},{idade:14,total:31}
+    ],
+    idadeLtv:[ /* dados resumidos */ 
+        {idade:0, ltv:735},{idade:4, ltv:7136},{idade:5,ltv:8245},{idade:12,ltv:11280},
+        {idade:65,ltv:13556},{idade:89,ltv:34920}
+    ],
+    idadeTempo:[
+        {idade:0, tempo:2.1},{idade:4,tempo:20.4},{idade:5,tempo:23.6},{idade:12,tempo:32.2},
+        {idade:65,tempo:38.7},{idade:89,tempo:99.8}
+    ],
+    tipoPorIdade:[
+        {idade:5,des:300,can:65},{idade:6,des:280,can:117} /* exemplo */
+    ],
+    ativosPorIdade:[
+        {idade:4,ativos:454,tempo:20.4,ltv:7135.95},/* ... */
+    ]
+};
+
+/* ========== ESTADO GLOBAL / FILTROS ========== */
+let state = {period:'all',units:['all']};
+
+/* ========== FUNÇÕES DE FILTRO ========== */
+function applyFilters(dataKey){
+    if(state.units.includes('all')) return raw[dataKey];
+    return raw[dataKey].filter(d=> state.units.includes(d.unidade));
+}
+
+/* ========== RENDER KPIs ========== */
+function renderKpis(){
+    const area=document.getElementById('kpiArea');
+    area.innerHTML='';
+    const k = raw.kpis;
+    const items=[
+        {lbl:'Alunos Ativos',val:k.ativos},
+        {lbl:'Total Evasão',val:k.evasao},
+        {lbl:'Taxa de Churn',val:k.churn},
+        {lbl:'Impacto Anual',val:k.impacto}
+    ];
+    items.forEach(i=>{
+        area.insertAdjacentHTML('beforeend',
+            `<div class="kpi"><span>${i.lbl}</span><strong>${i.val}</strong></div>`);
+    });
+}
+
+/* ========== CHART HELPERS ========== */
+const chartObjs={};         // armazena instâncias para atualização
+function makeChart(id, type, cfg){            // cria ou atualiza
+    if(chartObjs[id]){chartObjs[id].destroy();}
+    chartObjs[id]=new Chart(document.getElementById(id),cfg);
+}
+/* ========== PANORAMA ========= */
+function renderMotivo(){
+    const d=raw.motivo;
+    makeChart('pieMotivo','pie',{
+        type:'doughnut',
+        data:{labels:['Desistentes','Cancelados'],
+              datasets:[{data:[d.desistentes,d.cancelados],
+                         backgroundColor:[ 'var(--c4)','var(--c2)']}]},
+        options:{plugins:{tooltip:{callbacks:{
+                    label:(ctx)=>(ctx.label+': '+ctx.parsed+' ('+
+                        (ctx.parsed*100/(d.desistentes+d.cancelados)).toFixed(1)+'%)')}}}}
+    });
+    // clique -> filtro
+    document.getElementById('pieMotivo').onclick=e=>{
+        const p=chartObjs.pieMotivo.getElementsAtEventForMode(e,'nearest',{intersect:true},true);
+        if(!p.length) return;
+        alert('Exemplo: aqui você poderia aplicar filtro por tipo ('+p[0].index+')');
+    };
+}
+
+function renderTopUnits(){
+    const data=applyFilters('unidades').slice().sort((a,b)=>b.evasao-a.evasao).slice(0,5);
+    makeChart('barTopUnits','bar',{
+        type:'bar',
+        data:{
+          labels:data.map(d=>d.unidade),
+          datasets:[
+            {label:'Desistentes',data:data.map(d=>d.desistentes),backgroundColor:'var(--c4)'},
+            {label:'Cancelados', data:data.map(d=>d.cancelados), backgroundColor:'var(--c2)'}
+          ]
+        },
+        options:{indexAxis:'y',responsive:true,scales:{x:{stacked:true},y:{stacked:true}}}
+    });
+    document.getElementById('barTopUnits').onclick=e=>{
+        const p=chartObjs.barTopUnits.getElementsAtEventForMode(e,'nearest',{intersect:true},true);
+        if(!p.length) return;
+        const un=data[p[0].index].unidade;
+        state.units=[un];
+        document.querySelectorAll('#unitFilter option').forEach(o=>o.selected=(o.value===un));
+        renderAll();
+    };
+}
+
+/* ========= DETALHADO ========= */
+function renderDetalhado(){
+    /* Barras evasão idade */
+    makeChart('barEvasaoIdade','bar',{
+        type:'bar',
+        data:{
+            labels:raw.idadeEvasao.map(d=>d.idade),
+            datasets:[{label:'Alunos Perdidos',data:raw.idadeEvasao.map(d=>d.total),
+                       backgroundColor:'var(--c4)'}]
+        },
+        options:{responsive:true}
+    });
+
+    /* Linhas tipo por idade (dados exemplo) */
+    makeChart('lineTipoIdade','line',{
+        type:'line',
+        data:{
+            labels:raw.tipoPorIdade.map(d=>d.idade),
+            datasets:[
+                {label:'Desistentes',data:raw.tipoPorIdade.map(d=>d.des),
+                 borderColor:'var(--c4)',fill:false},
+                {label:'Cancelados',data:raw.tipoPorIdade.map(d=>d.can),
+                 borderColor:'var(--c2)',fill:false}
+            ]
         }
+    });
 
-        // --- DADOS PROCESSADOS ---
-        const statusData = {"Desistência":888,"Cancelado":602};
-        const unidadeData = {"712N":456,"610S":384,"VP":285,"303SW":199,"702S":166};
-        const faixaEtariaMantaData = {"9-12: AP 2, 3":255,"5-6: Iniciação":248,"7-8: AP 1":209,"3-4: Adaptação":197,"0-2: Bebê":149,"36-45: Adulto 2":107,"56+: Adulto 4":101,"25-35: Adulto 1":94,"46-55: Adulto 3":63,"13-17: Adolescente":51,"18-24: Jovem Adulto":16};
-        const ltUnidadeData = {"702S":28.3,"712N":21.7,"610S":21.5,"303SW":19.3,"VP":14.8};
+    /* LTV por idade */
+    makeChart('barLtvIdade','bar',{
+        type:'bar',
+        data:{
+            labels:raw.idadeLtv.map(d=>d.idade),
+            datasets:[{label:'LTV médio (R$)',data:raw.idadeLtv.map(d=>d.ltv),
+                       backgroundColor:'var(--c1)'}]
+        }
+    });
 
-        // --- GRÁFICOS ---
-        new Chart(document.getElementById('statusChart').getContext('2d'), {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(statusData),
-                datasets: [{
-                    data: Object.values(statusData),
-                    backgroundColor: [colorPalette.red, colorPalette.yellow],
-                    borderColor: '#ffffff',
-                    borderWidth: 2
-                }]
-            },
-            options: defaultChartOptions
-        });
+    /* Tempo por idade */
+    makeChart('lineTempoIdade','line',{
+        type:'line',
+        data:{
+            labels:raw.idadeTempo.map(d=>d.idade),
+            datasets:[{label:'Tempo médio (meses)',data:raw.idadeTempo.map(d=>d.tempo),
+                       borderColor:'var(--c1)',fill:false}]
+        }
+    });
+}
 
-        new Chart(document.getElementById('unidadeChart').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: Object.keys(unidadeData),
-                datasets: [{
-                    label: 'Total de Alunos Evadidos',
-                    data: Object.values(unidadeData),
-                    backgroundColor: colorPalette.blue,
-                }]
-            },
-            options: { ...defaultChartOptions, plugins: { ...defaultChartOptions.plugins, legend: { display: false } }, scales: { y: { beginAtZero: true } } }
-        });
+/* ========= TABELAS ========= */
+let dtUnits,dtAtivos;
+function renderTables(){
+    // Unidades
+    if(dtUnits)dtUnits.destroy();
+    dtUnits = $('#tabUnidades').DataTable({
+        data:raw.unidades,
+        columns:[
+            {title:'Unidade',data:'unidade'},
+            {title:'Total Evasão',data:'evasao'},
+            {title:'Desistentes',data:'desistentes'},
+            {title:'Cancelados',data:'cancelados'},
+            {title:'% Desistentes',data:'percDes',
+             render:d=>d.toFixed(1)+' %'},
+            {title:'Impacto Mensal (R$)',data:'impacto',
+             render:d=>d.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
+        ],
+        paging:false,info:false
+    });
+    $('#tabUnidades tbody').on('click','tr',function(){
+        const un=dtUnits.row(this).data().unidade;
+        state.units=[un]; renderAll();
+    });
 
-        new Chart(document.getElementById('ltUnidadeChart').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: Object.keys(ltUnidadeData),
-                datasets: [{
-                    label: 'Permanência Média (Meses)',
-                    data: Object.values(ltUnidadeData).map(v => v.toFixed(1)),
-                    backgroundColor: colorPalette.green,
-                }]
-            },
-             options: { ...defaultChartOptions, indexAxis: 'y', plugins: { ...defaultChartOptions.plugins, legend: { display: false } }, scales: { x: { beginAtZero: true } } }
-        });
-        
-        const faixaEtariaLabels = Object.keys(faixaEtariaMantaData).map(l => wrapLabel(l));
-        new Chart(document.getElementById('faixaEtariaMantaChart').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: faixaEtariaLabels,
-                datasets: [{
-                    label: 'Alunos Evadidos',
-                    data: Object.values(faixaEtariaMantaData),
-                    backgroundColor: [
-                        '#EF476F', '#EF476F', '#EF476F', 
-                        '#FFD166', '#FFD166',
-                        '#06D6A0', '#06D6A0', '#06D6A0', '#06D6A0',
-                        '#118AB2', '#118AB2'
-                    ]
-                }]
-            },
-            options: { ...defaultChartOptions, plugins: { ...defaultChartOptions.plugins, legend: { display: false } }, scales: { y: { beginAtZero: true } } }
-        });
+    // Ativos por idade
+    if(dtAtivos)dtAtivos.destroy();
+    dtAtivos = $('#tabAtivos').DataTable({
+        data:raw.ativosPorIdade,
+        columns:[
+            {title:'Idade',data:'idade'},
+            {title:'Nº Ativos',data:'ativos'},
+            {title:'Tempo Médio (meses)',data:'tempo'},
+            {title:'LTV Médio (R$)',data:'ltv',
+             render:d=>d.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
+        ],
+        paging:false,info:false
+    });
+}
 
-    </script>
+/* ========= EXPORTAÇÃO ========= */
+function exportCSV() {
+    let csv='Unidade,Evasao,Desistentes,Cancelados,Impacto\n';
+    applyFilters('unidades').forEach(r=>{
+        csv+=`${r.unidade},${r.evasao},${r.desistentes},${r.cancelados},${r.impacto}\n`;
+    });
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='dashboard-manta.csv';
+    a.click();
+}
+
+/* ========= EVENTOS UI ========= */
+document.getElementById('unitFilter').addEventListener('change',e=>{
+    const opts=[...e.target.options].filter(o=>o.selected).map(o=>o.value);
+    state.units=opts.length?opts:['all']; renderAll();
+});
+document.getElementById('periodFilter').addEventListener('change',e=>{
+    state.period=e.target.value; renderAll();
+});
+document.getElementById('exportBtn').addEventListener('click',exportCSV);
+
+/* ========= RENDER GERAL ========= */
+function renderAll(){
+    renderKpis();
+    renderMotivo();
+    renderTopUnits();
+    renderDetalhado();
+    renderTables();
+}
+renderAll();
+</script>
 
 </body>
 </html>
